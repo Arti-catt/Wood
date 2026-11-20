@@ -1,0 +1,40 @@
+digraph G {
+	graph [nodesep = 1.0];
+	bgcolor = "black";
+	rankdir = TB;
+	node [shape = Mrecord, color = darkred, style = filled, fillcolor = pink];
+	edge [color = "green", penwidth = 2];
+
+	node0x64fa7ef8b490 [label = "{{50} | {0x64fa7ef8b490} | {left | 0x64fa7ef8c6e0} | {right | 0x64fa7ef8c6b0} | {parent | (nil)} | {root_dist | 0}}"];
+	{rank = 0; node0x64fa7ef8b490;}
+	node0x64fa7ef8c6e0 [label = "{{20} | {0x64fa7ef8b490} | {left | 0x64fa7ef8c770} | {right | 0x64fa7ef8c710} | {parent | 0x64fa7ef8b490} | {root_dist | 1}}"];
+	{rank = 1; node0x64fa7ef8c6e0;}
+	node0x64fa7ef8b490 -> node0x64fa7ef8c6e0;
+	node1 [style = invis];
+	{rank = 1; node1;}
+	node0x64fa7ef8b490 -> node1 [color = "transparent"];
+	node0x64fa7ef8c770 [label = "{{20} | {0x64fa7ef8c6e0} | {left | (nil)} | {right | (nil)} | {parent | 0x64fa7ef8c6e0} | {root_dist | 2}}"];
+	{rank = 2; node0x64fa7ef8c770;}
+	node0x64fa7ef8c6e0 -> node0x64fa7ef8c770;
+	node2 [style = invis];
+	{rank = 2; node2;}
+	node0x64fa7ef8c6e0 -> node2 [color = "transparent"];
+	node3 [style = invis];
+	{rank = 2; node3;}
+	node0x64fa7ef8c6e0 -> node3 [color = "transparent"];
+	node0x64fa7ef8c710 [label = "{{10} | {0x64fa7ef8c6e0} | {left | (nil)} | {right | (nil)} | {parent | 0x64fa7ef8c6e0} | {root_dist | 2}}"];
+	{rank = 2; node0x64fa7ef8c710;}
+	node0x64fa7ef8c6e0 -> node0x64fa7ef8c710;
+	node4 [style = invis];
+	{rank = 1; node4;}
+	node0x64fa7ef8b490 -> node4 [color = "transparent"];
+	node0x64fa7ef8c6b0 [label = "{{10} | {0x64fa7ef8b490} | {left | (nil)} | {right | 0x64fa7ef8c740} | {parent | 0x64fa7ef8b490} | {root_dist | 1}}"];
+	{rank = 1; node0x64fa7ef8c6b0;}
+	node0x64fa7ef8b490 -> node0x64fa7ef8c6b0;
+	node5 [style = invis];
+	{rank = 2; node5;}
+	node0x64fa7ef8c6b0 -> node5 [color = "transparent"];
+	node0x64fa7ef8c740 [label = "{{10} | {0x64fa7ef8c6b0} | {left | (nil)} | {right | (nil)} | {parent | 0x64fa7ef8c6b0} | {root_dist | 2}}"];
+	{rank = 2; node0x64fa7ef8c740;}
+	node0x64fa7ef8c6b0 -> node0x64fa7ef8c740;
+}
