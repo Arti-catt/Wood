@@ -73,16 +73,18 @@ void TreeVerify();  // TODO:
 
 void CommandsCreator(Forest *tree);
 
+void Chitalochka(Forest *tree, Tree_node_t *parent, Tree_node_t *node, FILE *read_file);
+
 void Dump(Forest *tree, Tree_node_t *node, int mode LOCAL_PARS);
-void DumpParametres(Forest *tree, Tree_node_t *node, int mode);
+void DumpParametres(int mode);
 
 void DumpPicture(Forest *tree, Tree_node_t *node);
-void WriteGeneralPart(Forest *tree, Tree_node_t *node, FILE *graph_file);
+void WriteGeneralPart(FILE *graph_file);
 void NodesCreator(Forest *tree, Tree_node_t *node, FILE *graph_file, size_t *index);
 void CreateLeftNode(Forest *tree, Tree_node_t *node, FILE *graph_file, size_t *index);
 void CreateRightNode(Forest *tree, Tree_node_t *node, FILE *graph_file, size_t *index);
 
-void AddBackgroundPicture(Forest *tree, Tree_node_t *node, FILE *file_html);
+void AddBackgroundPicture(FILE *file_html);
 
 void CommandsPreparation(Forest *tree);
 void ClearNameEnd(char *graph_name, int symbol);
@@ -91,12 +93,17 @@ int main()
 {
     Forest tree = {};
     TreeInit(&tree, 50);
-    LinkRight(&tree, tree.root, 10);
-    LinkLeft(&tree, tree.root, 20);
-    LinkRight(&tree, tree.root->left, 10);
-    LinkRight(&tree, tree.root->right, 10);
-    LinkLeft(&tree, tree.root->left, 20);
+    // LinkRight(&tree, tree.root, 10);
+    // LinkLeft(&tree, tree.root, 20);
+    // LinkRight(&tree, tree.root->left, 10);
+    // LinkRight(&tree, tree.root->right, 10);
+    // LinkLeft(&tree, tree.root->left, 20);
+    // LinkLeft(&tree, tree.root->right, 20);
+    FILE *read_file = fopen("in.txt", "r");
+    GONDON(read_file)
 
+    Chitalochka(&tree, NULL, tree.root, read_file);
+    Dump(&tree, tree.root, BASE LOCAL_ARGS);
 
     TreePrint(&tree, tree.root);
     TreeDestroy(&tree);
@@ -166,11 +173,16 @@ void DeleteTNT(Forest *tree, Tree_node_t *node)
 {
     GONDON(node)
 
-    if (node->left)  DeleteTNT(tree, node->left);
-    if (node->right) DeleteTNT(tree, node->right);
+    if (node->left) {
+        DeleteTNT(tree, node->left);
+    }
+    if (node->right) {
+        DeleteTNT(tree, node->right);
+    }
 
     memset(node, 0, sizeof(Tree_node_t));
     free(node);
+    // if (tree->root) Dump(tree, tree->root, AFTER LOCAL_ARGS);
 }
 
 void TreePrint(Forest *tree, const Tree_node_t *node)
@@ -192,12 +204,12 @@ void TreeRecPrint(Forest *tree, const Tree_node_t *node)
     if (node->left)
         TreeRecPrint(tree, node->left);
     else
-        printf("(nil)");
+        printf(" # ");
 
     if (node->right)
         TreeRecPrint(tree, node->right);
     else
-        printf("(nil)");
+        printf(" # ");
 
     printf(")");
 }
@@ -206,7 +218,7 @@ void TreeDestroy(Forest *tree)
 {
     GONDON(tree)
 
-    Dump(tree, tree->root, BEFORE LOCAL_ARGS);
+    Dump(tree, tree->root, BASE LOCAL_ARGS);
 
     DeleteTNT(tree, tree->root);
 
@@ -215,14 +227,53 @@ void TreeDestroy(Forest *tree)
     fclose(dump_file);
 }
 
+void Chitalochka(Forest *tree, Tree_node_t *parent, Tree_node_t *node, FILE *read_file)
+{
+    GONDON(tree)
+
+    char symbol = 0;
+    
+    fscanf(read_file, "%c", &symbol);
+    // if (symbol == '\n' || symbol == EOF) {
+        // ungetc(symbol, read_file);
+        // return;
+    // }
+    if (symbol == '(') {
+        node->parent = parent;
+    }
+    // TODO: think about int
+    fscanf(read_file, "%d", &node->value);
+    printf("HERE: %d\n", node->value);
+    if (parent != NULL) printf("parent: %p\n left: %p, right: %p;\n\n", parent, parent->left, parent->right);
+    fscanf(read_file, "%c", &symbol);
+    if (symbol == ')') {
+        return;
+    }
+    if (symbol == '(') {
+        ungetc(symbol, read_file);
+        node->left = NewTNT();
+        Chitalochka(tree, node, node->left, read_file);
+    }
+    // while (fscanf(read_file, "%c", &symbol) && symbol != ')' && symbol != '(') {}
+    fscanf(read_file, "%c", &symbol);
+    if (symbol == '(') {
+        ungetc(symbol, read_file);
+        node->right = NewTNT();
+        Chitalochka(tree, node, node->right, read_file);
+    }
+    // fscanf(read_file, "%cil %cil ", &symbol, &symbol);
+    // printf("%d\n", check);
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 void Dump(Forest *tree, Tree_node_t *node, int mode LOCAL_PARS)     // Work with HTML file
 {
+    GONDON(tree)
     GONDON(node)
-    // AddBackgroundPicture(node, dump_file);
+    AddBackgroundPicture(dump_file);
+
     fprintf(dump_file,
-        "<body style =\"background-color: black; color: white;\">\n"
         "<h1>Dumping_Tree<img src=\"https://magnotek.ru/wp-content/uploads/2018/07/g0R5.gif\" width=\"20\"></h1>\n"
         "<p>"
         "<pre style=\"font-size: 24px;\">"
@@ -230,8 +281,8 @@ void Dump(Forest *tree, Tree_node_t *node, int mode LOCAL_PARS)     // Work with
         file, line
     );
     fprintf(dump_file, "Function: <span style=\"font-weight: bold;\">%s</span>", function);
-    DumpParametres(tree, node, mode);
-
+    DumpParametres(mode);
+    
     DumpPicture(tree, node);
     // ErrorShredder(node);
     fprintf(dump_file,
@@ -245,10 +296,8 @@ void Dump(Forest *tree, Tree_node_t *node, int mode LOCAL_PARS)     // Work with
     fprintf(dump_file, "\n");
 }
 
-void DumpParametres(Forest *tree, Tree_node_t *node, int mode)
+void DumpParametres(int mode)
 {
-    GONDON(node)
-
     switch(mode) {
         case BEFORE:
             fprintf(dump_file, "(BEFORE)");
@@ -271,7 +320,7 @@ void DumpPicture(Forest *tree, Tree_node_t *node)     // Work with DOT file
     FILE *graph_file = fopen(DOT_FILE_NAME, "w");
     GONDON(graph_file)
     // Write in the html file
-    WriteGeneralPart(tree, node, graph_file);
+    WriteGeneralPart(graph_file);
     size_t index = 0;
     NodesCreator(tree, node, graph_file, &index);
     fprintf(graph_file, "}");
@@ -285,12 +334,13 @@ void DumpPicture(Forest *tree, Tree_node_t *node)     // Work with DOT file
     // while (getchar() != '\n') {};
 }
 
-void WriteGeneralPart(Forest *tree, Tree_node_t *node, FILE *graph_file)
+void WriteGeneralPart(FILE *graph_file)
 {
-    GONDON(node)
+    GONDON(graph_file)
 
     fprintf(graph_file,
         "digraph G {\n"
+        "\tsize=\"18,14\";\n"
         "\tgraph [nodesep = 1.0];\n"
         "\tbgcolor = \"black\";\n"  // transparent
         "\trankdir = TB;\n"
@@ -305,7 +355,6 @@ void NodesCreator(Forest *tree, Tree_node_t *node, FILE *graph_file, size_t *ind
     GONDON(tree)
     GONDON(node)
     GONDON(graph_file)
-
     if (*index == 0) {
         fprintf(graph_file, "\tnode%p [label = \"{{%d} | {%p} | {left | %p} | {right | %p} | {parent | %p} | {root_dist | %zd}}\"];\n",
                 node, node->value, node, node->left, node->right, node->parent, node->root_dist);
@@ -394,7 +443,7 @@ void ClearNameEnd(char *graph_name, int symbol)
         *(letter++) = 0;
 }
 
-void AddBackgroundPicture(Forest *tree, Tree_node_t *node, FILE *file_html)
+void AddBackgroundPicture(FILE *file_html)
 {
     GONDON(file_html)
     
@@ -403,13 +452,13 @@ void AddBackgroundPicture(Forest *tree, Tree_node_t *node, FILE *file_html)
         return;
 
     fprintf(file_html,
-        "<body style=\""
-        "background-image: url(\'/home/solo/Documents/GitHub/Doubly-Linked-List/kaneki_bubble_small.jpg\'); "
-        "background-size: cover; "
-        "background-repeat: no-repeat;"
-        "background-position: center; "
-        "background-attachment: fixed; "
-        "color: white;\">\n"
+        "<body style =\"background-color: black; color: white;\">\n"
+        // "background-image: url(\'/home/solo/Documents/GitHub/Doubly-Linked-List/kaneki_bubble_small.jpg\'); "
+        // "background-size: cover; "
+        // "background-repeat: no-repeat;"
+        // "background-position: center; "
+        // "background-attachment: fixed; "
+        // "color: white;\">\n"
     );
     non_first = true;
 }
